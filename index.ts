@@ -1,22 +1,55 @@
-import express, { Express, Request, Response } from "express";
-import bodyParser from "body-parser";
-import cors from "cors";
-import mongoose from "mongoose";
-import dotenv from "dotenv";
+// import express, { Express, Request, Response } from "express";
+// import bodyParser from "body-parser";
+// import cors from "cors";
+// import mongoose from "mongoose";
 
-dotenv.config();
+import http from "http";
 
-const app: Express = express();
-const PORT = process.env.PORT || 5000;
+import app from "./app";
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello to Ashish Ka Server using Typescript");
+const normalizePort = (val: string): number | string | false => {
+  const port: number = parseInt(val, 10);
+
+  if (isNaN(port)) {
+    return val;
+  }
+  if (port >= 0) {
+    return port;
+  }
+  return false;
+};
+
+const port: number | string | false = normalizePort(process.env.PORT || "5000");
+app.set("port", port);
+
+const errorHandler = (error: { syscall: string; code: any }) => {
+  if (error.syscall !== "listen") {
+    throw error;
+  }
+
+  const address = server.address();
+  const bind = typeof address === "string" ? "pipe" + address : "port" + port;
+  switch (error.code) {
+    case "EACCES":
+      console.error(bind + "requires elevated privileges.");
+      process.exit(1);
+      break;
+    case "EADDRINUSE":
+      console.error(bind + "is already in use.");
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
+};
+
+const server = http.createServer(app);
+
+server.on("error", errorHandler);
+server.on("listening", () => {
+  const address = server.address();
+  const bind = typeof address === "string" ? "pipe" + address : "port" + port;
+  console.log("Listening on " + bind);
 });
 
-app.get("/test", (req: Request, res: Response) => {
-  res.send("testing route");
-});
-
-app.listen(PORT, () => {
-  console.log(`[server]: Server is running on port ${PORT}`);
-});
+server.listen(port);
