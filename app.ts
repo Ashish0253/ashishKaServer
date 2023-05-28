@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 
 import User from "./db/userModel";
 import dbConnect from "./db/dbConnect";
+import auth from "./auth";
 
 const app: Express = express();
 app.use(cors());
@@ -14,6 +15,20 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // execute database connection
 dbConnect();
+
+// Curb Cors Error by adding a header here
+app.use((req: Request, res: Response, next) => {
+  res.setHeader("Access-Control-Allow_Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow_Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  res.setHeader(
+    "Access-Control-Allow_Methods",
+    "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+  );
+  next();
+});
 
 app.get("/", (req: Request, res: Response) => {
   res.json({ message: "Hello to Ashish Ka Server using Typescript" });
@@ -113,4 +128,14 @@ app.post("/login", (request, response) => {
         error,
       });
     });
+});
+
+// free endpoint
+app.get("/free", (request, response) => {
+  response.json({ message: "You are free to access me anytime" });
+});
+
+// authentication endpoint
+app.get("/auth-endpoint", auth, (request, response) => {
+  response.json({ message: "You are authorized to access me" });
 });
