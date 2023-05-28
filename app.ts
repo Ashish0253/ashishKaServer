@@ -2,8 +2,9 @@ import express, { Express, Request, Response } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import bcrypt from "bcrypt";
-import User from "./db/userModel";
+import jwt from "jsonwebtoken";
 
+import User from "./db/userModel";
 import dbConnect from "./db/dbConnect";
 
 const app: Express = express();
@@ -54,6 +55,61 @@ app.post("/register", (req, res) => {
     .catch((error) => {
       res.status(500).send({
         message: "Password was not hashed successfully",
+        error,
+      });
+    });
+});
+
+// login endpoint
+app.post("/login", (request, response) => {
+  // check if user exists in the database
+  User.findOne({ email: request.body.email })
+    // if email exists
+    .then((user) => {
+      // if (user) {
+      // compare the password enetered and the hashed password in the database
+      bcrypt
+        .compare(request.body.password, user!.password)
+
+        // if password matches
+        .then((passwordCheck) => {
+          // check if password matches
+          // console.log(passwordCheck);  // passwordCheck to false deti h jb password match nhi hota to error kab aayega ??
+          if (!passwordCheck) {
+            response.status(400).send({
+              message: "Password does not match",
+            });
+          } else {
+            // create a JWT token
+            const token = jwt.sign(
+              {
+                userId: user!._id,
+                userEmail: user!.email,
+              },
+              "RANDOM-TOKEN",
+              { expiresIn: "24h" }
+            );
+
+            // return success if the user is logged in successfully
+            response.status(200).send({
+              message: "User logged in successfully",
+              email: user!.email,
+              token,
+            });
+          }
+        })
+        // check if password matches - kya ye catch block redundant nhi h ??
+        .catch((error) => {
+          response.status(400).send({
+            message: "Password does not match",
+            error,
+          });
+        });
+    })
+    // catch error if the email does not exist in the database
+    .catch((error) => {
+      response.status(404).send({
+        message: "Email not found",
         error,
       });
     });
