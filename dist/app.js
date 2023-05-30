@@ -37,6 +37,8 @@ app.post("/register", (req, res) => {
         .then((hashedPassword) => {
         // create a new user instance and collect data
         const user = new userModel_1.default({
+            name: req.body.name,
+            rollNumber: req.body.rollNumber,
             email: req.body.email,
             password: hashedPassword,
         });
