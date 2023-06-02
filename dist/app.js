@@ -95,6 +95,7 @@ app.post("/login", (request, response) => {
                 // return success if the user is logged in successfully
                 response.status(200).send({
                     message: "User logged in successfully",
+                    name: user.name,
                     email: user.email,
                     token,
                 });
